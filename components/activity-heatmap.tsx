@@ -12,9 +12,17 @@ function colorClass(count: number): string {
 }
 
 export function ActivityHeatmap({ days }: { days: ActivityDay[] }) {
+  const totalReviews = days.reduce((sum, day) => sum + day.reviews, 0);
+  const activeDays = days.filter((day) => day.reviews > 0).length;
+
   return (
-    <div className="rounded-lg border bg-white p-4">
-      <h2 className="mb-3 text-lg font-semibold">Activity (last 90 days)</h2>
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-end justify-between">
+        <h2 className="text-lg font-semibold">Activity (last 90 days)</h2>
+        <p className="text-xs text-slate-500">
+          {totalReviews} reviews on {activeDays} days
+        </p>
+      </div>
       <div
         className="grid gap-1"
         style={{ gridTemplateColumns: "repeat(18, minmax(0, 1fr))" }}
@@ -27,7 +35,7 @@ export function ActivityHeatmap({ days }: { days: ActivityDay[] }) {
           />
         ))}
       </div>
-      <p className="mt-3 text-xs text-slate-500">
+      <p className="mt-4 text-xs text-slate-500">
         Darker cells mean more reviews on that day.
       </p>
     </div>
