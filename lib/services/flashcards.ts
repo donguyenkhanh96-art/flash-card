@@ -26,21 +26,7 @@ type SubmitReviewInput = {
   grade: 1 | 2 | 3 | 4;
 };
 
-async function ensureUserExists(userId: string) {
-  const email = `${userId}@flashcard.local`;
-  await prisma.user.upsert({
-    where: { id: userId },
-    update: {},
-    create: {
-      id: userId,
-      email,
-      name: "Demo User",
-    },
-  });
-}
-
 export async function createDeck(input: CreateDeckInput) {
-  await ensureUserExists(input.userId);
   return prisma.deck.create({
     data: {
       name: input.name.trim(),
@@ -124,7 +110,6 @@ async function ensureProgressRowsForUserCards(input: {
 }
 
 export async function getDueCards(input: GetDueCardsInput) {
-  await ensureUserExists(input.userId);
   await ensureProgressRowsForUserCards({
     userId: input.userId,
     deckId: input.deckId,
@@ -151,7 +136,6 @@ export async function getDueCards(input: GetDueCardsInput) {
 }
 
 export async function submitReview(input: SubmitReviewInput) {
-  await ensureUserExists(input.userId);
   if (![1, 2, 3, 4].includes(input.grade)) {
     throw new Error("Grade must be between 1 and 4.");
   }

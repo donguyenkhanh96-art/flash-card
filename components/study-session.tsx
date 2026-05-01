@@ -25,10 +25,8 @@ const gradeButtons: Array<{ grade: 1 | 2 | 3 | 4; label: string }> = [
 
 export function StudySession({
   initialDueCards,
-  userId,
 }: {
   initialDueCards: DueCard[];
-  userId: string;
 }) {
   const [totalAtStart] = useState(initialDueCards.length);
   const [dueCards, setDueCards] = useState(initialDueCards);
@@ -48,7 +46,6 @@ export function StudySession({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId,
           cardId: current.card.id,
           grade,
         }),

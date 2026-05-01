@@ -1,16 +1,23 @@
 import Link from "next/link";
 import { ActivityHeatmap } from "../components/activity-heatmap";
+import { LogoutButton } from "../components/logout-button";
 import {
   getLeaderboard,
   getReviewActivity,
   listDecks,
 } from "../lib/services/flashcards";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../lib/auth";
 
 export const dynamic = "force-dynamic";
 
-const DEMO_USER_ID = process.env.DEMO_USER_ID ?? "demo-user";
-
 export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
   const [decks, leaderboard, activity] = await Promise.all([
     listDecks(),
     getLeaderboard(20),
@@ -22,13 +29,18 @@ export default async function DashboardPage() {
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-6 py-12">
       <section className="mb-8 rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-100 p-6 shadow-sm">
-        <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">
-          FlashCard MVP
-        </p>
-        <h1 className="mt-2 text-3xl font-bold md:text-4xl">Learning Dashboard</h1>
-        <p className="mt-3 max-w-2xl text-slate-600">
-          Browse decks, track XP leaderboard, and inspect learning activity.
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-emerald-700">
+              FlashCard MVP
+            </p>
+            <h1 className="mt-2 text-3xl font-bold md:text-4xl">Learning Dashboard</h1>
+            <p className="mt-3 max-w-2xl text-slate-600">
+              Browse decks, track XP leaderboard, and inspect learning activity.
+            </p>
+          </div>
+          <LogoutButton />
+        </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
             <p className="text-xs text-slate-500">Total decks</p>
@@ -70,7 +82,7 @@ export default async function DashboardPage() {
                 </p>
                 <Link
                   className="mt-3 inline-block rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                  href={`/decks/${deck.id}/study?userId=${DEMO_USER_ID}`}
+                  href={`/decks/${deck.id}/study`}
                 >
                   Study deck
                 </Link>

@@ -1,17 +1,23 @@
 import Link from "next/link";
 import { StudySession } from "../../../../components/study-session";
 import { getDeckById, getDueCards } from "../../../../lib/services/flashcards";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../../lib/auth";
 
 type PageProps = {
   params: { id: string };
-  searchParams?: { userId?: string };
 };
 
 export const dynamic = "force-dynamic";
 
-export default async function StudyDeckPage({ params, searchParams }: PageProps) {
+export default async function StudyDeckPage({ params }: PageProps) {
   const { id } = params;
-  const userId = searchParams?.userId ?? process.env.DEMO_USER_ID ?? "demo-user";
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+  const userId = session.user.id;
 
   const [deck, dueCards] = await Promise.all([
     getDeckById(id),
@@ -42,7 +48,7 @@ export default async function StudyDeckPage({ params, searchParams }: PageProps)
         <p className="mt-2 text-xs text-slate-500">{deck.cards.length} cards in this deck</p>
       </div>
 
-      <StudySession initialDueCards={dueCards} userId={userId} />
+      <StudySession initialDueCards={dueCards} />
     </main>
   );
 }
