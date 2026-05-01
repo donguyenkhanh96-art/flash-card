@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(cuid())
+  email            String             @unique
+  name             String?
+  totalXp          Int                @default(0)
+  createdAt        DateTime           @default(now())
+  decks            Deck[]             @relation("DeckCreator")
+  cardProgress     UserCardProgress[]
+  reviewLogs       ReviewLog[]
+}
+
+model Deck {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdById String
+  createdAt   DateTime @default(now())
+  createdBy   User     @relation("DeckCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  cards       Card[]
+
+  @@index([createdById])
+}
+
+model Card {
+  id             String             @id @default(cuid())
+  deckId         String
+  frontContent   String
+  backContent    String
+  createdAt      DateTime           @default(now())
+  deck           Deck               @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  userProgress   UserCardProgress[]
+  reviewLogs     ReviewLog[]
+
+  @@index([deckId])
+}
+
+model UserCardProgress {
+  id             String   @id @default(cuid())
+  userId         String
+  cardId         String
+  interval       Int      @default(0)
+  easeFactor     Float    @default(2.5)
+  nextReviewDate DateTime @default(now())
+  repetitions    Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, cardId])
+  @@index([nextReviewDate])
+  @@index([userId, nextReviewDate])
+  @@index([cardId])
+}
+
+model ReviewLog {
+  id         String   @id @default(cuid())
+  userId     String
+  cardId     String
+  grade      Int
+  reviewDate DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([userId, reviewDate])
+  @@index([cardId, reviewDate])
+}
